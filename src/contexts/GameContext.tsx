@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { toast } from "sonner";
+import { useSocket } from "./SocketContext";
 
 // Types
 export type Player = {
@@ -115,16 +116,65 @@ const getRandomWords = (category: "easy" | "medium" | "hard", count: number): Wo
 
 // Provider component
 export const GameProvider = ({ children }: { children: ReactNode }) => {
+  const { socket, isConnected } = useSocket();
   const [gameState, setGameState] = useState<GameState | null>(null);
-  type SetStateAction<S> = S | ((prevState: S) => S);
   const [playerName, setPlayerName] = useState("");
   const [gameName, setGameName] = useState("");
   const [gameId, setGameId] = useState("");
   const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   
+  // Set up socket event listeners
+  useEffect(() => {
+    if (!socket) return;
+    
+    // Game created event
+    socket.on('game-created', ({ gameId, gameState }) => {
+      setGameState(gameState);
+      setGameId(gameId);
+      setIsLoading(false);
+      toast.success("Game created successfully!");
+    });
+    
+    // Game joined event
+    socket.on('game-joined', ({ gameState }) => {
+      setGameState(gameState);
+      setIsLoading(false);
+      toast.success("Joined game successfully!");
+    });
+    
+    // Game updated event (players joined, scores changed, etc.)
+    socket.on('game-updated', (updatedGameState) => {
+      setGameState(updatedGameState);
+    });
+    
+    // Word selected event
+    socket.on('word-selected', (gameState) => {
+      setGameState(gameState);
+    });
+    
+    // Progress updated event
+    socket.on('progress-updated', (gameState) => {
+      setGameState(gameState);
+    });
+    
+    return () => {
+      // Clean up listeners when component unmounts
+      socket.off('game-created');
+      socket.off('game-joined');
+      socket.off('game-updated');
+      socket.off('word-selected');
+      socket.off('progress-updated');
+    };
+  }, [socket]);
+  
   // Initialize the game
   const createGame = () => {
+    if (!socket || !isConnected) {
+      toast.error("Not connected to server");
+      return;
+    }
+    
     if (!playerName || !gameName) {
       toast.error("Please enter your name and game name");
       return;
@@ -132,45 +182,28 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     
     setIsLoading(true);
     
-    // Simulate network delay
-    setTimeout(() => {
-      const newGameId = Math.random().toString(36).substr(2, 6).toUpperCase();
-      const playerId = Math.random().toString(36).substr(2, 9);
-      setCurrentPlayerId(playerId);
-      
-      // Generate initial words for each category
-      const words = [
-        getRandomWords("easy", 5),
-        getRandomWords("medium", 5),
-        getRandomWords("hard", 5)
-      ];
-      
-      const newGameState: GameState = {
-        id: newGameId,
-        name: gameName,
-        players: [
-          {
-            id: playerId,
-            name: playerName,
-            score: 0,
-            color: `#${Math.floor(Math.random()*16777215).toString(16)}`
-          }
-        ],
-        words,
-        startTime: Date.now(),
-        elapsedTime: 0,
-        isActive: true,
-        selectedWord: null
-      };
-      
-      setGameState(newGameState);
-      setGameId(newGameId);
-      setIsLoading(false);
-      toast.success("Game created successfully!");
-    }, 1000);
+    // Generate a random player ID
+    const playerId = Math.random().toString(36).substr(2, 9);
+    setCurrentPlayerId(playerId);
+    
+    // Create a player object
+    const player = {
+      id: playerId,
+      name: playerName,
+      score: 0,
+      color: `#${Math.floor(Math.random()*16777215).toString(16)}`
+    };
+    
+    // Send create game request to server
+    socket.emit('create-game', { gameName, player });
   };
   
   const joinGame = () => {
+    if (!socket || !isConnected) {
+      toast.error("Not connected to server");
+      return;
+    }
+    
     if (!playerName || !gameId) {
       toast.error("Please enter your name and game ID");
       return;
@@ -178,79 +211,40 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     
     setIsLoading(true);
     
-    // Simulate network delay
-    setTimeout(() => {
-      // In a real app, we'd fetch the game state from the server
-      // For now, we'll create a mock game
-      const playerId = Math.random().toString(36).substr(2, 9);
-      setCurrentPlayerId(playerId);
-      
-      // Generate initial words for each category (in a real app these would be synced)
-      const words = [
-        getRandomWords("easy", 5),
-        getRandomWords("medium", 5),
-        getRandomWords("hard", 5)
-      ];
-      
-      const mockExistingPlayers: Player[] = [
-        {
-          id: Math.random().toString(36).substr(2, 9),
-          name: "Player 1",
-          score: Math.floor(Math.random() * 12),
-          color: `#${Math.floor(Math.random()*16777215).toString(16)}`
-        },
-        {
-          id: Math.random().toString(36).substr(2, 9),
-          name: "Player 2",
-          score: Math.floor(Math.random() * 10),
-          color: `#${Math.floor(Math.random()*16777215).toString(16)}`
-        }
-      ];
-      
-      const newGameState: GameState = {
-        id: gameId,
-        name: "Joined Game", // In real app, we'd get this from the server
-        players: [
-          ...mockExistingPlayers,
-          {
-            id: playerId,
-            name: playerName,
-            score: 0,
-            color: `#${Math.floor(Math.random()*16777215).toString(16)}`
-          }
-        ],
-        words,
-        startTime: Date.now() - 300000, // 5 minutes earlier to simulate a game in progress
-        elapsedTime: 300000,
-        isActive: true,
-        selectedWord: null
-      };
-      
-      setGameState(newGameState);
-      setIsLoading(false);
-      toast.success("Joined game successfully!");
-    }, 1500);
+    // Generate a random player ID
+    const playerId = Math.random().toString(36).substr(2, 9);
+    setCurrentPlayerId(playerId);
+    
+    // Create a player object
+    const player = {
+      id: playerId,
+      name: playerName,
+      score: 0,
+      color: `#${Math.floor(Math.random()*16777215).toString(16)}`
+    };
+    
+    // Send join game request to server
+    socket.emit('join-game', { gameId, player });
   };
   
   const selectWord = (wordId: string, category: "easy" | "medium" | "hard", columnIndex: number, rowIndex: number) => {
     if (!gameState || !currentPlayerId || gameState.selectedWord) return;
+    if (!socket || !isConnected) {
+      toast.error("Not connected to server");
+      return;
+    }
     
-    // Set the selected word with initial progress
-    const selectedWord: SelectedWord = {
+    // Send the word selection to the server
+    socket.emit('select-word', {
+      gameId: gameState.id,
       wordId,
       category,
       columnIndex,
       rowIndex,
-      playerId: currentPlayerId,
-      progress: 0
-    };
-    
-    setGameState({
-      ...gameState,
-      selectedWord: { ...selectedWord, progress: 0 }
+      playerId: currentPlayerId
     });
     
-    // Start the progress animation
+    // Animation locally
     const animationDuration = 1000; // 1 second
     const startTime = Date.now();
     
@@ -259,54 +253,23 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / animationDuration, 1);
       
-      setGameState(currentState => {
-        if (!currentState?.selectedWord) return currentState || gameState!;
-        return {
-          ...currentState,
-          selectedWord: {
-            ...currentState.selectedWord!,
-            progress: progress * 100
-          }
-        };
+      // Send progress updates to server
+      socket.emit('word-progress', {
+        gameId: gameState.id,
+        progress: progress * 100
       });
       
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
-        // Animation complete, update the word and score
-        setGameState(currentState => {
-          if (!currentState) return currentState || gameState!;
-          
-          const playerIndex = currentState.players.findIndex(p => p.id === currentPlayerId);
-          if (playerIndex === -1) return currentState;
-          
-          // Determine score based on category
-          let pointsToAdd = 0;
-          switch(category) {
-            case "easy": pointsToAdd = 1; break;
-            case "medium": pointsToAdd = 2; break;
-            case "hard": pointsToAdd = 3; break;
-          }
-          
-          // Update player score
-          const updatedPlayers = [...currentState.players];
-          updatedPlayers[playerIndex] = {
-            ...updatedPlayers[playerIndex],
-            score: updatedPlayers[playerIndex].score + pointsToAdd
-          };
-          
-          // Replace the selected word with a new one
-          const updatedWords = [...currentState.words];
-          const newWord = getRandomWords(category, 1)[0];
-          updatedWords[columnIndex][rowIndex] = newWord;
-          
-          // Update game state
-          return {
-            ...currentState,
-            players: updatedPlayers,
-            words: updatedWords,
-            selectedWord: null
-          };
+        // Word completion - notify server
+        socket.emit('word-completed', {
+          gameId: gameState.id,
+          wordId,
+          category,
+          columnIndex,
+          rowIndex,
+          playerId: currentPlayerId
         });
         
         // Toast with the point gained
@@ -329,21 +292,32 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     setCurrentPlayerId(null);
   };
   
-  // Update elapsed time
+  // Update elapsed time and sync with server
   useEffect(() => {
-    if (!gameState?.isActive) return;
+    if (!gameState?.isActive || !socket) return;
     
     const interval = setInterval(() => {
       if (gameState) {
+        const updatedElapsedTime = Date.now() - gameState.startTime;
+        
+        // Update local state
         setGameState({
           ...gameState,
-          elapsedTime: Date.now() - gameState.startTime
+          elapsedTime: updatedElapsedTime
         });
+        
+        // Sync with server occasionally
+        if (currentPlayerId === gameState.players[0]?.id) {
+          socket.emit('update-time', {
+            gameId: gameState.id,
+            elapsedTime: updatedElapsedTime
+          });
+        }
       }
     }, 1000);
     
     return () => clearInterval(interval);
-  }, [gameState]);
+  }, [gameState, socket, currentPlayerId]);
   
   return (
     <GameContext.Provider
