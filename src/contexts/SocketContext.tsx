@@ -18,7 +18,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // In your SocketContext.tsx
-    const socketInstance = io('https://your-render-app-url.onrender.com');
+    const socketInstance = io('https://bubbly-word-wars.onrender.com');
 
     // Socket event handlers
     socketInstance.on('connect', () => {
