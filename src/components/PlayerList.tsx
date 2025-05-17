@@ -38,7 +38,7 @@ const PlayerList: React.FC = () => {
   
   return (
     <div className="w-full py-4">
-      <ScrollArea className="w-full" orientation="horizontal">
+      <ScrollArea className="w-full">
         <div className="flex gap-2 pb-4 px-2">
           {gameState.players.map((player) => (
             <PlayerCard

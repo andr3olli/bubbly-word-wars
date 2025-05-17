@@ -105,7 +105,7 @@ const GameBoard: React.FC = () => {
                 animationDuration={500}
               >
                 {chartData.map((entry, index) => (
-                  <cell key={`cell-${index}`} fill={entry.color} />
+                  <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Bar>
             </BarChart>
