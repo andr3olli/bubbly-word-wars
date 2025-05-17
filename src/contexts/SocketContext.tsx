@@ -17,8 +17,8 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    // Connect to the WebSocket server
-    const socketInstance = io('http://localhost:3001');
+    // In your SocketContext.tsx
+    const socketInstance = io('https://your-render-app-url.onrender.com');
 
     // Socket event handlers
     socketInstance.on('connect', () => {
