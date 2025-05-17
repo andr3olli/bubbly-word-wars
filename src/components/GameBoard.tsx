@@ -1,8 +1,7 @@
-
 import React from "react";
 import { useGameContext } from "@/contexts/GameContext";
 import WordCard from "./WordCard";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
+import { ResponsiveContainer, BarChart, Bar, Cell, XAxis, YAxis, Tooltip } from "recharts";
 
 const GameBoard: React.FC = () => {
   const { gameState } = useGameContext();
