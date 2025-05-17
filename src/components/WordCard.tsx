@@ -41,14 +41,14 @@ const WordCard: React.FC<WordCardProps> = ({ id, text, category, columnIndex, ro
   
   const getBorderColor = () => {
     if (isBeingProcessed && processingPlayer) {
-      return "border-primary";
+      return "border-2";
     }
     
     switch(category) {
-      case "easy": return "border-game-easy";
-      case "medium": return "border-game-medium";
-      case "hard": return "border-game-hard";
-      default: return "border-primary";
+      case "easy": return "border border-game-easy";
+      case "medium": return "border border-game-medium";
+      case "hard": return "border border-game-hard";
+      default: return "border border-primary";
     }
   };
   
@@ -83,13 +83,14 @@ const WordCard: React.FC<WordCardProps> = ({ id, text, category, columnIndex, ro
     <Tooltip>
       <TooltipTrigger asChild>
         <div 
-          className={`${compact ? 'h-14' : 'h-28'} game-card ${getBorderColor()} relative overflow-hidden`} 
+          className={`${compact ? 'h-14' : 'h-28'} game-card relative overflow-hidden ${getBorderColor()}`} 
           onClick={handleClick}
           style={{ 
             boxShadow: getGlowColor(),
             opacity: isBeingProcessed || isProcessing ? 0.9 : 1,
-            transition: 'opacity 0.2s ease',
-            cursor: isBeingProcessed || isProcessing ? 'not-allowed' : 'pointer'
+            transition: 'opacity 0.2s ease, border-color 0.2s ease',
+            cursor: isBeingProcessed || isProcessing ? 'not-allowed' : 'pointer',
+            borderColor: isBeingProcessed && processingPlayer ? processingPlayer.color : undefined
           }}
         >
           {(isProcessing || isBeingProcessed) && (
