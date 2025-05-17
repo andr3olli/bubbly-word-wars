@@ -8,9 +8,10 @@ interface WordCardProps {
   category: "easy" | "medium" | "hard";
   columnIndex: number;
   rowIndex: number;
+  compact?: boolean;
 }
 
-const WordCard: React.FC<WordCardProps> = ({ id, text, category, columnIndex, rowIndex }) => {
+const WordCard: React.FC<WordCardProps> = ({ id, text, category, columnIndex, rowIndex, compact = false }) => {
   const { selectWord } = useGameContext();
   const [isProcessing, setIsProcessing] = useState(false);
   
@@ -46,7 +47,7 @@ const WordCard: React.FC<WordCardProps> = ({ id, text, category, columnIndex, ro
   
   return (
     <div 
-      className={`game-card ${getBorderColor()}`} 
+      className={`${compact ? 'h-16' : 'h-28'} game-card ${getBorderColor()}`} 
       onClick={handleClick}
       style={{ boxShadow: getGlowColor() }}
     >
@@ -55,12 +56,7 @@ const WordCard: React.FC<WordCardProps> = ({ id, text, category, columnIndex, ro
       )}
       
       <div className="text-center">
-        <p className="font-medium text-lg">{text}</p>
-        <div className="mt-2 text-xs text-muted-foreground">
-          {category === "easy" && "1 point"}
-          {category === "medium" && "2 points"}
-          {category === "hard" && "3 points"}
-        </div>
+        <p className={`font-medium ${compact ? 'text-base' : 'text-lg'}`}>{text}</p>
       </div>
     </div>
   );

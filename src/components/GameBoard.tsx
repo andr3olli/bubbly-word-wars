@@ -1,7 +1,9 @@
+
 import React from "react";
 import { useGameContext } from "@/contexts/GameContext";
 import WordCard from "./WordCard";
 import { ResponsiveContainer, BarChart, Bar, Cell, XAxis, YAxis, Tooltip } from "recharts";
+import { ScrollArea } from "./ui/scroll-area";
 
 const GameBoard: React.FC = () => {
   const { gameState } = useGameContext();
@@ -18,16 +20,19 @@ const GameBoard: React.FC = () => {
   }));
   
   return (
-    <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
+    <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4 mt-2 h-[calc(100vh-220px)]">
       {/* Words Section */}
-      <div className="card-gradient rounded-xl border border-border p-4">
-        <h2 className="text-xl font-bold mb-4">Words</h2>
+      <div className="card-gradient rounded-xl border border-border p-3">
+        <h2 className="text-xl font-bold mb-2">Words</h2>
         
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-3">
           {/* Easy Column */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-game-easy">Easy</h3>
-            <div className="space-y-3">
+          <div>
+            <h3 className="text-sm font-medium text-game-easy mb-2 flex justify-between">
+              <span>Easy</span>
+              <span>1 point</span>
+            </h3>
+            <div className="space-y-2">
               {words[0].map((word, index) => (
                 <WordCard
                   key={word.id}
@@ -36,15 +41,19 @@ const GameBoard: React.FC = () => {
                   category="easy"
                   columnIndex={0}
                   rowIndex={index}
+                  compact={true}
                 />
               ))}
             </div>
           </div>
           
           {/* Medium Column */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-game-medium">Medium</h3>
-            <div className="space-y-3">
+          <div>
+            <h3 className="text-sm font-medium text-game-medium mb-2 flex justify-between">
+              <span>Medium</span>
+              <span>2 points</span>
+            </h3>
+            <div className="space-y-2">
               {words[1].map((word, index) => (
                 <WordCard
                   key={word.id}
@@ -53,15 +62,19 @@ const GameBoard: React.FC = () => {
                   category="medium"
                   columnIndex={1}
                   rowIndex={index}
+                  compact={true}
                 />
               ))}
             </div>
           </div>
           
           {/* Hard Column */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-game-hard">Hard</h3>
-            <div className="space-y-3">
+          <div>
+            <h3 className="text-sm font-medium text-game-hard mb-2 flex justify-between">
+              <span>Hard</span>
+              <span>3 points</span>
+            </h3>
+            <div className="space-y-2">
               {words[2].map((word, index) => (
                 <WordCard
                   key={word.id}
@@ -70,6 +83,7 @@ const GameBoard: React.FC = () => {
                   category="hard"
                   columnIndex={2}
                   rowIndex={index}
+                  compact={true}
                 />
               ))}
             </div>
@@ -78,17 +92,24 @@ const GameBoard: React.FC = () => {
       </div>
       
       {/* Scores Section */}
-      <div className="card-gradient rounded-xl border border-border p-4">
-        <h2 className="text-xl font-bold mb-4">Scores</h2>
+      <div className="card-gradient rounded-xl border border-border p-3">
+        <h2 className="text-xl font-bold mb-2">Scores</h2>
         
-        <div className="w-full h-[500px]">
+        <div className="w-full h-[calc(100%-40px)]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} layout="vertical">
-              <XAxis type="number" domain={[0, 'dataMax + 5']} />
+            <BarChart 
+              data={chartData} 
+              layout="horizontal"
+              barGap={10}
+              barCategoryGap={20}
+            >
               <YAxis 
+                type="number" 
+                domain={[0, 'dataMax + 5']} 
+              />
+              <XAxis 
                 dataKey="name" 
                 type="category" 
-                width={80} 
                 tick={{ fontSize: 12 }} 
               />
               <Tooltip 
@@ -102,6 +123,7 @@ const GameBoard: React.FC = () => {
                 dataKey="score" 
                 isAnimationActive={true}
                 animationDuration={500}
+                barSize={24}
               >
                 {chartData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />

@@ -8,7 +8,7 @@ const GameContainer: React.FC = () => {
   const { gameState } = useGameContext();
   
   return (
-    <div className="w-full">
+    <div className="w-full h-full">
       {!gameState ? <GameLobby /> : <Game />}
     </div>
   );
@@ -16,8 +16,8 @@ const GameContainer: React.FC = () => {
 
 const Index: React.FC = () => {
   return (
-    <div className="min-h-screen w-full bg-background flex items-center justify-center p-4">
-      <div className="container max-w-6xl">
+    <div className="min-h-screen w-full bg-background flex items-center justify-center p-3">
+      <div className="container max-w-6xl h-[calc(100vh-24px)]">
         <GameProvider>
           <GameContainer />
         </GameProvider>

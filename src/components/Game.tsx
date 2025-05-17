@@ -12,7 +12,7 @@ const Game: React.FC = () => {
   if (!gameState) return null;
   
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full flex flex-col h-screen">
       <div className="flex items-center justify-between">
         <TopBar />
       </div>
@@ -21,7 +21,7 @@ const Game: React.FC = () => {
       
       <GameBoard />
       
-      <div className="flex justify-center mt-6">
+      <div className="flex justify-center mt-3 mb-3">
         <Button variant="outline" onClick={resetGame}>
           Exit Game
         </Button>
