@@ -16,6 +16,15 @@ export type Word = {
   category: "easy" | "medium" | "hard";
 };
 
+export type SelectedWord = {
+  wordId: string;
+  category: "easy" | "medium" | "hard";
+  columnIndex: number;
+  rowIndex: number;
+  playerId: string;
+  progress: number;
+};
+
 export type GameState = {
   id: string;
   name: string;
@@ -24,6 +33,7 @@ export type GameState = {
   startTime: number;
   elapsedTime: number;
   isActive: boolean;
+  selectedWord: SelectedWord | null;
 };
 
 type GameContextType = {
@@ -106,6 +116,7 @@ const getRandomWords = (category: "easy" | "medium" | "hard", count: number): Wo
 // Provider component
 export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [gameState, setGameState] = useState<GameState | null>(null);
+  type SetStateAction<S> = S | ((prevState: S) => S);
   const [playerName, setPlayerName] = useState("");
   const [gameName, setGameName] = useState("");
   const [gameId, setGameId] = useState("");
@@ -148,7 +159,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         words,
         startTime: Date.now(),
         elapsedTime: 0,
-        isActive: true
+        isActive: true,
+        selectedWord: null
       };
       
       setGameState(newGameState);
@@ -210,7 +222,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         words,
         startTime: Date.now() - 300000, // 5 minutes earlier to simulate a game in progress
         elapsedTime: 300000,
-        isActive: true
+        isActive: true,
+        selectedWord: null
       };
       
       setGameState(newGameState);
@@ -220,41 +233,94 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   };
   
   const selectWord = (wordId: string, category: "easy" | "medium" | "hard", columnIndex: number, rowIndex: number) => {
-    if (!gameState || !currentPlayerId) return;
+    if (!gameState || !currentPlayerId || gameState.selectedWord) return;
     
-    // Find the player
-    const playerIndex = gameState.players.findIndex(p => p.id === currentPlayerId);
-    if (playerIndex === -1) return;
-    
-    // Determine score based on category
-    let pointsToAdd = 0;
-    switch(category) {
-      case "easy": pointsToAdd = 1; break;
-      case "medium": pointsToAdd = 2; break;
-      case "hard": pointsToAdd = 3; break;
-    }
-    
-    // Update player score
-    const updatedPlayers = [...gameState.players];
-    updatedPlayers[playerIndex] = {
-      ...updatedPlayers[playerIndex],
-      score: updatedPlayers[playerIndex].score + pointsToAdd
+    // Set the selected word with initial progress
+    const selectedWord: SelectedWord = {
+      wordId,
+      category,
+      columnIndex,
+      rowIndex,
+      playerId: currentPlayerId,
+      progress: 0
     };
     
-    // Replace the selected word with a new one
-    const updatedWords = [...gameState.words];
-    const newWord = getRandomWords(category, 1)[0];
-    updatedWords[columnIndex][rowIndex] = newWord;
-    
-    // Update game state
     setGameState({
       ...gameState,
-      players: updatedPlayers,
-      words: updatedWords
+      selectedWord: { ...selectedWord, progress: 0 }
     });
     
-    // Toast with the point gained
-    toast.success(`+${pointsToAdd} points!`);
+    // Start the progress animation
+    const animationDuration = 1000; // 1 second
+    const startTime = Date.now();
+    
+    const animate = () => {
+      const now = Date.now();
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / animationDuration, 1);
+      
+      setGameState(currentState => {
+        if (!currentState?.selectedWord) return currentState || gameState!;
+        return {
+          ...currentState,
+          selectedWord: {
+            ...currentState.selectedWord!,
+            progress: progress * 100
+          }
+        };
+      });
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        // Animation complete, update the word and score
+        setGameState(currentState => {
+          if (!currentState) return currentState || gameState!;
+          
+          const playerIndex = currentState.players.findIndex(p => p.id === currentPlayerId);
+          if (playerIndex === -1) return currentState;
+          
+          // Determine score based on category
+          let pointsToAdd = 0;
+          switch(category) {
+            case "easy": pointsToAdd = 1; break;
+            case "medium": pointsToAdd = 2; break;
+            case "hard": pointsToAdd = 3; break;
+          }
+          
+          // Update player score
+          const updatedPlayers = [...currentState.players];
+          updatedPlayers[playerIndex] = {
+            ...updatedPlayers[playerIndex],
+            score: updatedPlayers[playerIndex].score + pointsToAdd
+          };
+          
+          // Replace the selected word with a new one
+          const updatedWords = [...currentState.words];
+          const newWord = getRandomWords(category, 1)[0];
+          updatedWords[columnIndex][rowIndex] = newWord;
+          
+          // Update game state
+          return {
+            ...currentState,
+            players: updatedPlayers,
+            words: updatedWords,
+            selectedWord: null
+          };
+        });
+        
+        // Toast with the point gained
+        let pointsToAdd = 0;
+        switch(category) {
+          case "easy": pointsToAdd = 1; break;
+          case "medium": pointsToAdd = 2; break;
+          case "hard": pointsToAdd = 3; break;
+        }
+        toast.success(`+${pointsToAdd} points!`);
+      }
+    };
+    
+    requestAnimationFrame(animate);
   };
   
   // Reset game state
