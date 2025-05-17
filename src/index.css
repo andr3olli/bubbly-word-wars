@@ -90,4 +90,13 @@
   .animate-progress {
     animation: progress 1s linear forwards;
   }
+
+  .no-hover-effect {
+    pointer-events: none;
+  }
+  
+  .no-hover-effect .recharts-rectangle {
+    pointer-events: none !important;
+    opacity: 1 !important;
+  }
 }

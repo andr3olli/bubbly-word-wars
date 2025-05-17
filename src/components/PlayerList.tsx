@@ -15,9 +15,11 @@ const PlayerCard: React.FC<{
     <motion.div 
       initial={{ scale: 0.9, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
-      className={`flex flex-col items-center p-3 min-w-[100px] bg-secondary/60 backdrop-blur-sm rounded-xl border-2 ${
-        isCurrentPlayer ? `border-primary` : `border-secondary`
-      } mx-2`}
+      className={`flex flex-col items-center p-3 min-w-[100px] bg-secondary/60 backdrop-blur-sm rounded-xl border-2 mx-2`}
+      style={{
+        borderColor: isCurrentPlayer ? color : `${color}80`,
+        boxShadow: isCurrentPlayer ? `0 0 0 2px ${color}40` : 'none'
+      }}
     >
       <div 
         className="w-10 h-10 rounded-full flex items-center justify-center mb-2"

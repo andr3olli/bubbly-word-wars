@@ -13,11 +13,13 @@ const GameBoard: React.FC = () => {
   
   const { words, players } = gameState;
   
-  // Prepare data for the bar chart
+  // Prepare data for the bar chart with consistent colors
   const chartData = players.map((player) => ({
     name: player.name,
     score: player.score,
-    color: player.color || "#4ade80"
+    color: player.color || "#4ade80",
+    // Add a slightly darker color for the border
+    borderColor: `${player.color || "#4ade80"}cc`
   }));
   
   return (
@@ -98,38 +100,60 @@ const GameBoard: React.FC = () => {
         
         <div className="w-full h-[calc(100%-40px)]">
           <BarChart 
+            className="no-hover-effect"
             width={500}
             height={300}
-            data={chartData} 
-            layout="vertical"
+            data={chartData}
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             barGap={8}
             barCategoryGap={16}
           >
             <XAxis 
-              type="number" 
-              domain={[0, 'dataMax + 5']} 
+              dataKey="name" 
+              type="category"
+              tick={{ fontSize: 12 }}
+              axisLine={false}
+              tickLine={false}
             />
             <YAxis 
-              dataKey="name" 
-              type="category" 
-              tick={{ fontSize: 12 }} 
-              width={100}
+              type="number"
+              domain={[0, (dataMax: number) => Math.max(dataMax * 1.1, 10)]}
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 12 }}
+              tickFormatter={(value) => `${value} pts`}
             />
             <Tooltip 
               contentStyle={{ 
-                backgroundColor: 'rgba(30, 30, 30, 0.8)', 
-                borderColor: 'rgba(255, 255, 255, 0.1)' 
+                backgroundColor: 'rgba(30, 30, 30, 0.9)', 
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                borderRadius: '6px',
+                padding: '8px 12px'
               }}
               formatter={(value) => [`${value} points`]}
+              labelFormatter={(name) => `Player: ${name}`}
             />
             <Bar 
               dataKey="score" 
-              isAnimationActive={true}
-              animationDuration={500}
-              barSize={16}
+              isAnimationActive={false}
+              barSize={40}
+              radius={[4, 4, 0, 0]}
+              onMouseEnter={() => {}}
+              onMouseLeave={() => {}}
             >
               {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={entry.color}
+                  stroke={entry.borderColor}
+                  strokeWidth={1}
+                  style={{
+                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
+                    opacity: 1,
+                    transition: 'none',
+                    pointerEvents: 'none'
+                  }}
+                />
               ))}
             </Bar>
           </BarChart>
