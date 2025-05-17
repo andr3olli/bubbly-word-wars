@@ -2,8 +2,9 @@
 import React from "react";
 import { useGameContext } from "@/contexts/GameContext";
 import WordCard from "./WordCard";
-import { ResponsiveContainer, BarChart, Bar, Cell, XAxis, YAxis, Tooltip } from "recharts";
+import { ChartContainer, ChartTooltipContent } from "./ui/chart";
 import { ScrollArea } from "./ui/scroll-area";
+import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip } from "recharts";
 
 const GameBoard: React.FC = () => {
   const { gameState } = useGameContext();
@@ -20,7 +21,7 @@ const GameBoard: React.FC = () => {
   }));
   
   return (
-    <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4 mt-2 h-[calc(100vh-220px)]">
+    <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4 mt-2 flex-1">
       {/* Words Section */}
       <div className="card-gradient rounded-xl border border-border p-3">
         <h2 className="text-xl font-bold mb-2">Words</h2>
@@ -28,9 +29,9 @@ const GameBoard: React.FC = () => {
         <div className="grid grid-cols-3 gap-3">
           {/* Easy Column */}
           <div>
-            <h3 className="text-sm font-medium text-game-easy mb-2 flex justify-between">
+            <h3 className="text-sm font-medium mb-2 flex justify-between">
               <span>Easy</span>
-              <span>1 point</span>
+              <span className="text-xs text-muted-foreground">1 point</span>
             </h3>
             <div className="space-y-2">
               {words[0].map((word, index) => (
@@ -49,9 +50,9 @@ const GameBoard: React.FC = () => {
           
           {/* Medium Column */}
           <div>
-            <h3 className="text-sm font-medium text-game-medium mb-2 flex justify-between">
+            <h3 className="text-sm font-medium mb-2 flex justify-between">
               <span>Medium</span>
-              <span>2 points</span>
+              <span className="text-xs text-muted-foreground">2 points</span>
             </h3>
             <div className="space-y-2">
               {words[1].map((word, index) => (
@@ -70,9 +71,9 @@ const GameBoard: React.FC = () => {
           
           {/* Hard Column */}
           <div>
-            <h3 className="text-sm font-medium text-game-hard mb-2 flex justify-between">
+            <h3 className="text-sm font-medium mb-2 flex justify-between">
               <span>Hard</span>
-              <span>3 points</span>
+              <span className="text-xs text-muted-foreground">3 points</span>
             </h3>
             <div className="space-y-2">
               {words[2].map((word, index) => (
@@ -96,41 +97,42 @@ const GameBoard: React.FC = () => {
         <h2 className="text-xl font-bold mb-2">Scores</h2>
         
         <div className="w-full h-[calc(100%-40px)]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart 
-              data={chartData} 
-              layout="horizontal"
-              barGap={10}
-              barCategoryGap={20}
+          <BarChart 
+            width={500}
+            height={300}
+            data={chartData} 
+            layout="vertical"
+            barGap={8}
+            barCategoryGap={16}
+          >
+            <XAxis 
+              type="number" 
+              domain={[0, 'dataMax + 5']} 
+            />
+            <YAxis 
+              dataKey="name" 
+              type="category" 
+              tick={{ fontSize: 12 }} 
+              width={100}
+            />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: 'rgba(30, 30, 30, 0.8)', 
+                borderColor: 'rgba(255, 255, 255, 0.1)' 
+              }}
+              formatter={(value) => [`${value} points`]}
+            />
+            <Bar 
+              dataKey="score" 
+              isAnimationActive={true}
+              animationDuration={500}
+              barSize={16}
             >
-              <YAxis 
-                type="number" 
-                domain={[0, 'dataMax + 5']} 
-              />
-              <XAxis 
-                dataKey="name" 
-                type="category" 
-                tick={{ fontSize: 12 }} 
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'rgba(30, 30, 30, 0.8)', 
-                  borderColor: 'rgba(255, 255, 255, 0.1)' 
-                }}
-                formatter={(value) => [`${value} points`]}
-              />
-              <Bar 
-                dataKey="score" 
-                isAnimationActive={true}
-                animationDuration={500}
-                barSize={24}
-              >
-                {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Bar>
+          </BarChart>
         </div>
       </div>
     </div>

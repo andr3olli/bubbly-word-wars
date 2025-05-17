@@ -13,15 +13,13 @@ const Game: React.FC = () => {
   
   return (
     <div className="w-full flex flex-col h-screen">
-      <div className="flex items-center justify-between">
-        <TopBar />
-      </div>
+      <TopBar />
       
       <PlayerList />
       
       <GameBoard />
       
-      <div className="flex justify-center mt-3 mb-3">
+      <div className="flex justify-center mt-auto pb-3">
         <Button variant="outline" onClick={resetGame}>
           Exit Game
         </Button>

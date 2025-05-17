@@ -1,6 +1,8 @@
 
 import React, { useState } from "react";
 import { useGameContext } from "@/contexts/GameContext";
+import { Tooltip } from "@/components/ui/tooltip";
+import { TooltipContent, TooltipTrigger } from "@radix-ui/react-tooltip";
 
 interface WordCardProps {
   id: string;
@@ -45,20 +47,31 @@ const WordCard: React.FC<WordCardProps> = ({ id, text, category, columnIndex, ro
     }, 1000);
   };
   
+  const isLongText = text.length > 9;
+  
   return (
-    <div 
-      className={`${compact ? 'h-16' : 'h-28'} game-card ${getBorderColor()}`} 
-      onClick={handleClick}
-      style={{ boxShadow: getGlowColor() }}
-    >
-      {isProcessing && (
-        <div className="absolute top-0 left-0 h-1 bg-primary animate-progress"></div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div 
+          className={`${compact ? 'h-14' : 'h-28'} game-card ${getBorderColor()}`} 
+          onClick={handleClick}
+          style={{ boxShadow: getGlowColor() }}
+        >
+          {isProcessing && (
+            <div className="absolute top-0 left-0 h-1 bg-primary animate-progress"></div>
+          )}
+          
+          <div className="text-center w-full overflow-hidden">
+            <p className={`font-medium ${compact ? 'text-sm' : 'text-lg'} word-text`}>{text}</p>
+          </div>
+        </div>
+      </TooltipTrigger>
+      {isLongText && (
+        <TooltipContent side="top" className="bg-background border border-border p-2 rounded shadow-md">
+          {text}
+        </TooltipContent>
       )}
-      
-      <div className="text-center">
-        <p className={`font-medium ${compact ? 'text-base' : 'text-lg'}`}>{text}</p>
-      </div>
-    </div>
+    </Tooltip>
   );
 };
 
